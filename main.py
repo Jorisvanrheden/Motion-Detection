@@ -3,7 +3,7 @@ import time
 import datetime
 import numpy
 
-def calculateFrameDifference(A, B):
+def detectMovement(A, B):
 	if A is None:
 		return
 		
@@ -15,7 +15,7 @@ def calculateFrameDifference(A, B):
 	#print(deviation)
 	
 	if deviation > 0.15:
-		print("Movement detected", datetime.datetime.now().time())
+		return True
 			
 	
 video = cv2.VideoCapture("kamer.mp4")
@@ -28,6 +28,9 @@ frameTime = 1/framesPerSecond
 oldTime = time.time()
 
 
+
+lines = []
+
 while(video.isOpened()):
 
 	newTime = time.time()
@@ -39,9 +42,14 @@ while(video.isOpened()):
 	
 		frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 		
-		calculateFrameDifference(lastFrame, frame)
+		movementDetected = detectMovement(lastFrame, frame)
+		if movementDetected:
+			current_time = datetime.datetime.now().strftime('%H:%M:%S')
+			print("Movement detected", current_time)
+			lines.append(current_time)
+		
 		lastFrame = frame
-			
+		
 		cv2.imshow('frame', frame)
 		
 		oldTime = time.time()
@@ -49,6 +57,11 @@ while(video.isOpened()):
 	if cv2.waitKey(1) & 0xFF == ord('q'):
 		break
 
+file = open("output.txt","w+")
+for i in range(len(lines)):
+	file.write("%s\n" % lines[i])
+file.close()
+		
 video.release()
 cv2.destroyAllWindows()
 	
